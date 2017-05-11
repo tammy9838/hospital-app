@@ -1,3 +1,4 @@
+//googlemap direction api key: AIzaSyAIhBgBucmNvPhFm90OO0rhjZOzlUNyQN8
 /**
  * l9 Map 9
  * https://github.com/kobkrit/learn-react-native
@@ -16,287 +17,113 @@ import {
   TouchableHighlight,
   StatusBar,
   Navigator,
-  TextInput,
-  AlertIOS,
-  AsyncStorage,
-  ScrollView,
 } from 'react-native';
 var {height, width} = Dimensions.get('window');
 import MapView from 'react-native-maps';
 
-import Dentist from './api/dentist.js';
-import Vet from './api/vet.js';
-import Hospital from './api/hospital.js';
-import Distance from './api/distance.js';
+// import Menu from './Menu.js';
+import SearchPage from './SearchPage.js';
+import MapPage from './MapPage.js';
 
-export default class hospital extends Component {
-  constructor(props){
-    super(props);
-    this.state = {
-      currentLatitude: null,
-      currentLongitude: null,
-      error: null,
-      region: {
-        latitude: 37.78825,
-        longitude: -122.4324,
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421,
-      },
-      markers : []
-    };
-    this.onRegionChange = this.onRegionChange.bind(this);
-    this.findDentist = this.findDentist.bind(this);
-    this.findVet = this.findVet.bind(this);
-    this.findHospital = this.findHospital.bind(this);
+
+
+const routes = [
+  {
+    title: 'Map',
+    index: 0
+  }, {
+    title: 'Search',
+    index: 1
+  },{
+    title: 'Categories',
+    index: 2
+  }, {
+    title: 'Event',
+    index: 3
+  },{
+    title: 'Ngv',
+    index: 4
+  }, {
+    title: 'Setting',
+    index: 5
   }
-
-  onRegionChange(region) {
-    this.setState({region});
-  }
-
-  componentDidMount() {
-    this.watchId = navigator.geolocation.watchPosition(
-      (position) => {
-        this.setState({
-          currentLatitude: position.coords.latitude,
-          currentLongitude: position.coords.longitude,
-          error: null,
-        });
-      },
-      (error) => this.setState({ error: error.message }),
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000, distanceFilter: 10 },
-    );
-  }
-
-  componentWillUnmount() {
-    navigator.geolocation.clearWatch(this.watchId);
-  }
-
-  findDentist(){
-    var placeInfo = [];
-    var count = -1;
-    console.log(`On pressed!` );
-    /*console.log(this.state.currentLatitude);*/
-    Dentist.getPlace(this.state.currentLatitude,this.state.currentLongitude).then((res) =>{
-      console.log(res);
-      //console.log(res.results[1].photos[0].photo_reference);
-      //console.log(res.results[0].name);
-      for (var i = 0; i < res.results.length; i++) {
-        placeInfo[i] = {place_id: res.results[i].place_id,
-                        title: res.results[i].name,
-                        latlng : {latitude: res.results[i].geometry.location.lat, longitude: res.results[i].geometry.location.lng},
-                        photo: {uri: 'https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=CnRtAAAATLZNl354RwP_9UKbQ_5Psy40texXePv4oAlgP4qNEkdIrkyse7rPXYGd9D_Uj1rVsQdWT4oRz4QrYAJNpFX7rzqqMlZw2h2E2y5IKMUZ7ouD_SlcHxYq1yL4KbKUv3qtWgTK0A6QbGh87GB3sscrHRIQiG2RrmU_jF4tENr9wGS_YxoUSSDrYjWmrNfeEHSGSc3FyhNLlBU&key=AIzaSyAIhBgBucmNvPhFm90OO0rhjZOzlUNyQN8'},
-                        description: res.results[i].vicinity,
-                        image: require('./images/attention.png'),
-                      };
-                    if (res.results[i].photos != null || res.results[i].photos !=undefined ){
-                      //console.log(i);
-                      placeInfo[i].photo = {uri: `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${res.results[i].photos[0].photo_reference}&key=AIzaSyAIhBgBucmNvPhFm90OO0rhjZOzlUNyQN8`};
-                      /*console.log(res.results[i].name);
-                      console.log(res.results[i].photos[0].photo_reference);*/
-                    }
-                    Distance.getDistance(this.state.currentLatitude , this.state.currentLongitude ,
-                      res.results[i].geometry.location.lat , res.results[i].geometry.location.lng).then((response) =>{
-                        count = count+1;
-                        /*console.log(count);
-                        console.log(placeInfo[count].title);
-                        console.log(response.rows[0].elements[0].distance.text);
-                        console.log(response.rows[0].elements[0].duration.text);
-                        console.log('---------------------------------------------------');*/
-                        placeInfo[count].distance = response.rows[0].elements[0].distance.text;
-                        placeInfo[count].duration = response.rows[0].elements[0].duration.text
-                    });
-
-      }
-
-      //console.log(placeInfo);
-      this.setState({
-        markers : placeInfo
-      });
-      //this.state.markers = placeInfo;
-      console.log(this.state.markers);
-    });
-  }
-
-  findVet(){
-    var placeInfo = [];
-    var count = -1;
-    console.log(`On pressed!` );
-    /*console.log(this.state.currentLatitude);*/
-    Vet.getPlace(this.state.currentLatitude,this.state.currentLongitude).then((res) =>{
-      //console.log(res);
-      //console.log(res.results[0].name);
-      for (var i = 0; i < res.results.length; i++) {
-        placeInfo[i] = {place_id: res.results[i].place_id,
-                        title: res.results[i].name,
-                        latlng : {latitude: res.results[i].geometry.location.lat, longitude: res.results[i].geometry.location.lng},
-                        photo: {uri: 'https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=CnRtAAAATLZNl354RwP_9UKbQ_5Psy40texXePv4oAlgP4qNEkdIrkyse7rPXYGd9D_Uj1rVsQdWT4oRz4QrYAJNpFX7rzqqMlZw2h2E2y5IKMUZ7ouD_SlcHxYq1yL4KbKUv3qtWgTK0A6QbGh87GB3sscrHRIQiG2RrmU_jF4tENr9wGS_YxoUSSDrYjWmrNfeEHSGSc3FyhNLlBU&key=AIzaSyAIhBgBucmNvPhFm90OO0rhjZOzlUNyQN8'},
-                        description: res.results[i].vicinity,
-                        image: require('./images/attention.png'),
-                      };
-      if (res.results[i].photos != null || res.results[i].photos !=undefined ){
-        placeInfo[i].photo = {uri: `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${res.results[i].photos[0].photo_reference}&key=AIzaSyAIhBgBucmNvPhFm90OO0rhjZOzlUNyQN8`};
-        /*console.log(res.results[i].name);
-        console.log(res.results[i].photos[0].photo_reference);
-        console.log(`https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${res.results[i].photos[0].photo_reference}&key=AIzaSyAIhBgBucmNvPhFm90OO0rhjZOzlUNyQN8`);*/
-      }
-      Distance.getDistance(this.state.currentLatitude , this.state.currentLongitude ,
-        res.results[i].geometry.location.lat , res.results[i].geometry.location.lng).then((response) =>{
-          count = count+1;
-          placeInfo[count].distance = response.rows[0].elements[0].distance.text;
-          placeInfo[count].duration = response.rows[0].elements[0].duration.text
-      });
-      }
-      //console.log(placeInfo);
-      this.setState({
-        markers : placeInfo
-      });
-      //this.state.markers = placeInfo;
-      console.log(this.state.markers);
-    });
-  }
-
-    findHospital(){
-      var placeInfo = [];
-      var count = -1;
-      console.log(`On pressed!` );
-      /*console.log(this.state.currentLatitude);*/
-      Hospital.getPlace(this.state.currentLatitude,this.state.currentLongitude).then((res) =>{
-        //console.log(res);
-        //console.log(res.results[0].name);
-        for (var i = 0; i < res.results.length; i++) {
-          placeInfo[i] = {place_id: res.results[i].place_id,
-                          title: res.results[i].name,
-                          latlng : {latitude: res.results[i].geometry.location.lat, longitude: res.results[i].geometry.location.lng},
-                          photo: {uri: 'https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=CnRtAAAATLZNl354RwP_9UKbQ_5Psy40texXePv4oAlgP4qNEkdIrkyse7rPXYGd9D_Uj1rVsQdWT4oRz4QrYAJNpFX7rzqqMlZw2h2E2y5IKMUZ7ouD_SlcHxYq1yL4KbKUv3qtWgTK0A6QbGh87GB3sscrHRIQiG2RrmU_jF4tENr9wGS_YxoUSSDrYjWmrNfeEHSGSc3FyhNLlBU&key=AIzaSyAIhBgBucmNvPhFm90OO0rhjZOzlUNyQN8'},
-                          description: res.results[i].vicinity,
-                          image: require('./images/attention.png'),
-                        };
-        if (res.results[i].photos != null || res.results[i].photos !=undefined ){
-          placeInfo[i].photo = {uri: `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${res.results[i].photos[0].photo_reference}&key=AIzaSyCC0crXKewe6P9uHj8PInupu9szq0Sy7gY`};
-          /*console.log(res.results[i].name);
-          console.log(res.results[i].photos[0].photo_reference);
-          console.log(`https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${res.results[i].photos[0].photo_reference}&key=AIzaSyAIhBgBucmNvPhFm90OO0rhjZOzlUNyQN8`);*/
-        }
-        Distance.getDistance(this.state.currentLatitude , this.state.currentLongitude ,
-          res.results[i].geometry.location.lat , res.results[i].geometry.location.lng).then((response) =>{
-            count = count+1;
-            placeInfo[count].distance = response.rows[0].elements[0].distance.text;
-            placeInfo[count].duration = response.rows[0].elements[0].duration.text
-        });
-        }
-        //console.log(placeInfo);
-        this.setState({
-          markers : placeInfo
-        });
-        //this.state.markers = placeInfo;
-        console.log(this.state.markers);
-      });
-  }
-
+];
+class hospital extends Component {
   render() {
     return (
       <View style={styles.container}>
-        <MapView style={styles.map}
-        showsUserLocation={true}
-        followsUserLocation={true}
-        showsCompass={true}
-        showsPointOfInterest={false}
-        region={this.state.region}
-        onRegionChange={this.onRegionChange}
-        >
-          {this.state.markers.map((marker, i) => (
-            <MapView.Marker key={i} coordinate={marker.latlng} title={marker.title} description={marker.description}>
-              {/*<View style={styles.pin}>
-                <Image style={styles.pinImage} source={marker.image}/>
-                <Text style={styles.pinText}>
-                  {marker.title}
-                </Text>
-              </View>*/}
-              <MapView.Callout style={styles.callout}>
+        <StatusBar
+          backgroundColor="darkred"
+          barStyle="light-content"
+        />
+        <Navigator
+          initialRoute={routes[0]}
+          initialRouteStack={routes}
+          renderScene={
+            (route, navigator) => {
+              switch (route.index) {
+                case 0: return (<MapPage navigator={navigator} route={routes[route.index]} {...route.passProps}></MapPage>);
+                case 1: return (<SearchPage navigator={navigator} route={routes[route.index]} {...route.passProps}></SearchPage>);
 
-                  <Image style={styles.calloutPhoto} source={marker.photo}/>
-                  <Text style={styles.calloutTitle}>{marker.title}</Text>
-                  <Text>{marker.description}</Text>
-                  <Text>-------------------------</Text>
-                  <Text>Distance: {marker.distance}</Text>
-                  <Text>Duration: {marker.duration}</Text>
+              }
+            }
+          }
+          configureScene={
+            (route, routeStack) =>
+              Navigator.SceneConfigs.FadeAndroid
+          }
 
-              </MapView.Callout>
-            </MapView.Marker>
-          ))}
-        </MapView>
-        <View style={styles.container}>
-          <Text>
-            Latitude: {this.state.region.latitude}{'\n'}
-            Longitude: {this.state.region.longitude}{'\n'}
-            LatitudeDelta: {this.state.region.latitudeDelta}{'\n'}
-            LongitudeDelta: {this.state.region.longitudeDelta}{'\n'}
-            C_Latitude: {this.state.currentLatitude}{'\n'}
-            C_Longitude: {this.state.currentLongitude}
-            {this.state.error ? <Text>Error: {this.state.error}</Text> : null}
-          </Text>
-          <TouchableOpacity style={styles.button}
-            onPress={ this.findDentist}>
-            <Text style={styles.buttonText}>Dentist</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button}
-            onPress={ this.findVet}>
-            <Text style={styles.buttonText}>Animal</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button}
-            onPress={ this.findHospital}>
-            <Text style={styles.buttonText}>Search</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+          navigationBar={
+           <Navigator.NavigationBar
+             routeMapper={{
+               LeftButton: (route, navigator, index, navState) => {
+                 if (route.index == 0){
+                   return null;
+                 }
+                 if (route.index == 1){
+                   return (
+                     <TouchableHighlight onPress={()=>navigator.push({index:0})}>
+                       <Text style={styles.navigationBarText}>Back</Text>
+                     </TouchableHighlight>
+                   )
+
+                 }
+                 return (
+                   <TouchableHighlight onPress={()=>navigator.pop()}>
+                     <Text style={styles.navigationBarText}>Back</Text>
+                   </TouchableHighlight>
+                 )
+               },
+               RightButton: (route, navigator, index, navState) => { return null; },
+               Title: (route, navigator, index, navState) =>
+                 { return (<Text style={[styles.navigationBarText, styles.titleText]}>{routes[route.index].title}</Text>); },
+             }}
+             style={styles.navigationBar}
+           />
+        }
+      />
+    </View>
     );
   }
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF'
+    flex: 1
   },
-  map: {
-    width: width,
-    height: height*2/3
+  navigationBar:{
+    backgroundColor: 'black',
   },
-  pin: {
-    backgroundColor: '#fffa',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderColor: 'black',
-    borderWidth: 2,
-    padding: 5,
-    borderRadius: 10
+  navigationBarText:{
+    color: 'white',
+    padding: 10,
+    fontSize: 15
   },
-  pinImage: {
-    width: 25,
-    height: 25
-  },
-  pinText: {
-    color: 'red'
-  },
-  callout:{
-    flex: 1,
-    position: 'relative' ,
-    paddingRight: 10,
-    paddingBottom: 10,
-    marginRight: 10,
-    marginBottom: 10
-  },
-  calloutPhoto:{
-    flex: 1,
-    width: 150,
-    height: 100
-  },
-  calloutTitle:{
-    fontSize: 16,
+  titleText:{
+    fontSize: 20,
+    paddingTop:5
   }
+
 });
 
 AppRegistry.registerComponent('hospital', () => hospital);
