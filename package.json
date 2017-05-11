@@ -1,5 +1,5 @@
 {
-  "name": "hospital",
+  "name": "l9_map",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -9,6 +9,8 @@
   "dependencies": {
     "react": "15.3.2",
     "react-native": "0.36.0",
+    "react-native-circle-button": "^1.0.8",
+    "react-native-google-places-autocomplete": "^1.2.12",
     "react-native-maps": "^0.12.4"
   },
   "jest": {
